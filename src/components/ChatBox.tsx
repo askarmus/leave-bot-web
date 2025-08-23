@@ -9,6 +9,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Msg = { role: "user" | "assistant"; text: string };
 
+// API response types
+type ChatSuccess = { reply: string; conversationId?: string };
+type ChatError = { error: string };
+type ChatResponse = ChatSuccess | ChatError;
+
+function isChatResponse(x: unknown): x is ChatResponse {
+  if (typeof x !== "object" || x === null) return false;
+  const obj = x as Record<string, unknown>;
+  return typeof obj.reply === "string" || typeof obj.error === "string";
+}
+
 export default function ChatBox() {
   const [messages, setMessages] = useState<Msg[]>([
     {
@@ -37,13 +48,24 @@ export default function ChatBox() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: msg, employee_id: employeeId }),
       });
-      const data = await r.json();
-      const reply = data?.reply ?? data?.error ?? "No reply";
+
+      const json: unknown = await r.json();
+      const data: ChatResponse = isChatResponse(json)
+        ? json
+        : { error: "Invalid response from server" };
+
+      const reply = "reply" in data ? data.reply : data.error;
       setMessages((m) => [...m, { role: "assistant", text: reply }]);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : typeof e === "string"
+          ? e
+          : "Unknown error";
       setMessages((m) => [
         ...m,
-        { role: "assistant", text: `Error: ${e.message}` },
+        { role: "assistant", text: `Error: ${message}` },
       ]);
     } finally {
       setLoading(false);
@@ -53,7 +75,7 @@ export default function ChatBox() {
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      send();
+      void send();
     }
   }
 
@@ -102,7 +124,7 @@ export default function ChatBox() {
             className="min-h-[60px]"
             disabled={loading}
           />
-          <Button onClick={send} disabled={loading}>
+          <Button onClick={() => void send()} disabled={loading}>
             {loading ? "Sending..." : "Send"}
           </Button>
         </div>
