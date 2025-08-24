@@ -144,9 +144,6 @@ export default function ChatBox() {
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-primary" />
             <span className="text-sm font-medium">Leave Assistant</span>
-            <Badge variant="secondary" className="hidden sm:inline-flex">
-              v1 • BALANCE
-            </Badge>
           </div>
           <div className="flex items-center gap-2">
             {rememberedId && (
@@ -166,7 +163,7 @@ export default function ChatBox() {
       </div>
 
       {/* Chat area */}
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col ">
         <ScrollArea className="flex-1 py-4">
           <div className="space-y-4">
             {messages.map((m, i) => (
@@ -187,13 +184,13 @@ export default function ChatBox() {
                 {/* Bubble */}
                 <Card
                   className={
-                    "max-w-[92%] whitespace-pre-wrap leading-relaxed shadow-sm " +
+                    "max-w-[92%] whitespace-pre-wrap leading-relaxed border-0 p-1 " +
                     (m.role === "assistant"
                       ? "bg-muted/60"
                       : "border-primary/20")
                   }
                 >
-                  <div className="prose prose-sm p-3 dark:prose-invert">
+                  <div className="prose prose-sm dark:prose-invert m-0 p-0">
                     {m.text}
                   </div>
                 </Card>
